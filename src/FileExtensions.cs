@@ -14,11 +14,37 @@
 			_settings = new();
 		}
 
-		public static void ApplySettingsFromFile(out Settings settings, string? configFilePath = null)
+		public static bool ApplySettingsFromFile(this ConsoleEx console, string? configFilePath = null)
 		{
 			if (Settings.TryGetFromFile(out Settings fileSettings, configFilePath))
 			{
+				_settings = fileSettings;
+				ApplySettings();
+				return true;
+			}
+
+			return false;
+		}
+
+		public static bool ApplySettingsFromEnvironment(this ConsoleEx console, string? debugVarName = null, string? errorVarName = null, string? infoVarName = null)
+		{
+			if (Settings.TryGetFromEnvironment(out Settings settings, debugVarName, errorVarName, infoVarName))
+			{
 				_settings = settings;
+				ApplySettings();
+				return true;
+			}
+
+			return false;
+		}
+
+		private static void ApplySettings()
+		{
+			if (_settings != null)
+			{
+				ConsoleEx.DebugColor = _settings.DebugColor;
+				ConsoleEx.ErrorColor = _settings.ErrorColor;
+				ConsoleEx.InfoColor = _settings.InfoColor;
 			}
 		}
 	}
