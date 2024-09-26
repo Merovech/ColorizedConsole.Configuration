@@ -10,26 +10,11 @@ namespace ColorizedConsole.Configuration
 			WriteIndented = true
 		};
 
-		/// <summary>
-		/// The color for the Debug methods (WriteDebug, WriteDebugLine).  Defaults to ColorConsole.Yellow.
-		/// </summary>
-		[JsonPropertyName("debugColor")]
-		[JsonConverter(typeof(JsonStringEnumConverter))]
-		public ConsoleColor DebugColor { get; set; } = Defaults.DebugColor;
+		[JsonPropertyName("colors")]
+		public ColorSettings Colors { get; set; }
 
-		/// <summary>
-		/// The color for the Error methods (WriteError, WriteErrorLine).  Defaults to ConsoleColor.Red.
-		/// </summary>
-		[JsonPropertyName("errorColor")]
-		[JsonConverter(typeof(JsonStringEnumConverter))]
-		public ConsoleColor ErrorColor { get; set; } = Defaults.ErrorColor;
-
-		/// <summary>
-		/// The color for the Info methods (WriteInfo, WriteInfoLine).  Defaults to ConsoleColor.Green.
-		/// </summary>
-		[JsonPropertyName("infoColor")]
-		[JsonConverter(typeof(JsonStringEnumConverter))]
-		public ConsoleColor InfoColor { get; set; } = Defaults.InfoColor;
+		[JsonPropertyName("environment")]
+		public EnvironmentSettings Environment { get; set; }
 
 		/// <summary>
 		/// Initializes a new instance of the Settings class with default values.
@@ -37,6 +22,8 @@ namespace ColorizedConsole.Configuration
 		public Settings()
 		{
 			// Use defaults
+			Colors = new();
+			Environment = new();
 		}
 
 		/// <summary>
@@ -45,11 +32,11 @@ namespace ColorizedConsole.Configuration
 		/// <param name="debugColor">The color for the Debug methods.  If null, uses the default.</param>
 		/// <param name="errorColor">The color for the Error methods.  If null, uses the default.</param>
 		/// <param name="consoleColor">The color for the Info methods.  If null, uses the default.</param>
-		public Settings(ConsoleColor? debugColor, ConsoleColor? errorColor, ConsoleColor? consoleColor)
+		public Settings(ConsoleColor? debugColor, ConsoleColor? errorColor, ConsoleColor? consoleColor) : this()
 		{
-			DebugColor = debugColor ?? Defaults.DebugColor;
-			ErrorColor = errorColor ?? Defaults.ErrorColor;
-			InfoColor = consoleColor ?? Defaults.InfoColor;
+			Colors.DebugColor = debugColor ?? Defaults.DebugColor;
+			Colors.ErrorColor = errorColor ?? Defaults.ErrorColor;
+			Colors.InfoColor = consoleColor ?? Defaults.InfoColor;
 		}
 
 		/// <summary>
@@ -70,7 +57,7 @@ namespace ColorizedConsole.Configuration
 				}
 
 				using FileStream fileStream = File.OpenRead(filename);
-				Settings? parsedSettings = JsonSerializer.Deserialize<Settings>(fileStream, _serializerOptions);
+				Settings? parsedSettings = JsonSerializer.Deserialize<Settings>(fileStream);
 
 				if (parsedSettings == null)
 				{
@@ -78,9 +65,9 @@ namespace ColorizedConsole.Configuration
 					return false;
 				}
 
-				settings.DebugColor = parsedSettings.DebugColor;
-				settings.ErrorColor = parsedSettings.ErrorColor;
-				settings.InfoColor = parsedSettings.InfoColor;
+				settings.Colors.DebugColor = parsedSettings.Colors.DebugColor;
+				settings.Colors.ErrorColor = parsedSettings.Colors.ErrorColor;
+				settings.Colors.InfoColor = parsedSettings.Colors.InfoColor;
 
 				return true;
 			}
@@ -110,18 +97,18 @@ namespace ColorizedConsole.Configuration
 
 			// If none of the vars exist, return false.  Otherwise, go ahead and set what we can.
 			// If any fail to parse, skip it.
-			var debugStr = Environment.GetEnvironmentVariable(debugVarName);
-			var errorStr = Environment.GetEnvironmentVariable(errorVarName);
-			var infoStr = Environment.GetEnvironmentVariable(infoVarName);
+			var debugStr = System.Environment.GetEnvironmentVariable(debugVarName);
+			var errorStr = System.Environment.GetEnvironmentVariable(errorVarName);
+			var infoStr = System.Environment.GetEnvironmentVariable(infoVarName);
 
 			if (debugStr == null && errorStr == null && infoStr == null)
 			{
 				return false;
 			}
 
-			settings.DebugColor = Enum.TryParse(debugStr, out ConsoleColor color) ? color : Defaults.DebugColor;
-			settings.ErrorColor = Enum.TryParse(errorStr, out color) ? color : Defaults.DebugColor;
-			settings.InfoColor = Enum.TryParse(infoStr, out color) ? color : Defaults.DebugColor;
+			settings.Colors.DebugColor = Enum.TryParse(debugStr, out ConsoleColor color) ? color : Defaults.DebugColor;
+			settings.Colors.ErrorColor = Enum.TryParse(errorStr, out color) ? color : Defaults.DebugColor;
+			settings.Colors.InfoColor = Enum.TryParse(infoStr, out color) ? color : Defaults.DebugColor;
 			return true;
 		}
 	}
